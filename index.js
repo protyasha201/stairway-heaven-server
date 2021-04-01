@@ -2,8 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const MongoClient = require('mongodb').MongoClient;
-const { ObjectID } = require('bson');
-
+const ObjectID = require('mongodb').ObjectID;
 const app = express();
 
 app.use(cors());
@@ -38,11 +37,11 @@ client.connect(err => {
   app.get('/product/:id', (req,res) => {
     productsCollection.find({_id: ObjectID(req.params.id)})
     .toArray((err, documents) => {
-      res.send(documents);
+      res.send(documents[0]);
     })
   })
+  console.log("connected to database")
     // client.close();
 });
-
 
 app.listen(port)
