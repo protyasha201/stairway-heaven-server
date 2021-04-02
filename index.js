@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+require('dotenv').config();
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const app = express();
@@ -10,12 +11,13 @@ app.use(bodyParser.json());
 
 const port = process.env.PORT || 5000;
 
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASS}@cluster0.ywip5.mongodb.net/stairwayHeaven?retryWrites=true&w=majority`;
+
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
 
-const uri = `mongodb+srv://stairwayShop:StairwayHeaven201@cluster0.ywip5.mongodb.net/stairwayHeaven?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
   const productsCollection = client.db("stairwayHeaven").collection("products");
@@ -29,7 +31,7 @@ client.connect(err => {
       })
   })
 
-  app.post('/orders', (req, res) => {
+  app.post('/addOrders', (req, res) => {
     const orderedProduct = req.body;
     ordersCollection.insertOne(orderedProduct)
       .then(result => {
@@ -51,24 +53,19 @@ client.connect(err => {
       })
   })
 
+  app.get('/orders', (req, res) => {
+    ordersCollection.find({email: req.query.email})
+    .toArray((err, documents) => {
+      res.send(documents)
+    })
+  })
+
   app.delete('/delete/:id', (req,res) => {
     productsCollection.deleteOne({_id: ObjectID(req.params.id)})
     .then(result => {
-      console.log(result);
+      // console.log(result);
     })
   })
-
-  app.patch('/update/:id',(req,res) => {
-    productsCollection.updateOne({ _id: ObjectID(req.params.id)}, 
-    {
-      $set: {quantity: req.body.quantity}
-    }
-    )
-    .then(result => {
-      console.log(result);
-    })
-  })
-
 
   console.log("connected to database")
   // client.close();
